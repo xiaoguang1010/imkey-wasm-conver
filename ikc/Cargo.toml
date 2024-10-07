@@ -1,15 +1,13 @@
 [package]
-name = "imkey-wasm-conver"
+name = "ikc"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-# [dependencies]
+[dependencies]
+ikc-webusb = { path = "../ikc-webusb"}
 
-
-[workspace]
-members = [
-    "ikc-webusb",
-    "ikc",
-]
+[lib]
+name="connector"
+crate-type=["staticlib","cdylib"]
