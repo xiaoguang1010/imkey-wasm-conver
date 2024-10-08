@@ -309,3 +309,7 @@ pub async fn send_and_receive(device: &UsbDevice, apdu: &[u8]) -> String{
 
     hex::encode(response_acc.data)
 }
+
+pub fn test1(){
+    println!("function test");
+}

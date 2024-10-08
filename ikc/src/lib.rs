@@ -1,9 +1,10 @@
 use wasm_bindgen::prelude::*;
+
 #[cfg(target_arch = "wasm32")]
-mod webusb;
+use ikc_webusb::webusb::connect;
 
 #[cfg(target_arch = "wasm32")]
 #[wasm_bindgen]
-pub async fn connect() {
-    webusb::connect().await;
+pub async fn connect_imkey() {
+    connect().await;
 }

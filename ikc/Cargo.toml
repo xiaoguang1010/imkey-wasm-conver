@@ -7,7 +7,12 @@ edition = "2021"
 
 [dependencies]
 ikc-webusb = { path = "../ikc-webusb"}
+ikc-device = { path = "../ikc-device" }
+ikc-common = { path = "../ikc-common" }
+wasm-bindgen = { version = "0.2.93", features = ["serde-serialize"] }
+wasm-bindgen-futures = "0.4"
+getrandom = { version = "0.2", features = ["js"] }  # 启用 "js" 特性
 
 [lib]
-name="connector"
+# name="connector"
 crate-type=["staticlib","cdylib"]
