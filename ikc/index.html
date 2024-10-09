@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rust WASM demo</title>
+</head>
+<body>
+    <button id="connectButton">Connect</button>
+    <br><br>
+    <input type="text" id="apduInput" placeholder="Enter APDU command" value="00A4040000" style="width: 300px;" />
+    <button id="sendButton" >Send APDU</button>
+    <div id="output"></div>
+    <br></br>
+    <button id="bingingButton" >设备绑定</button>
+
+    <script type="module">
+        import init, {connect_imkey, bind_check} from './pkg/ikc.js';
+        const connectButton = document.getElementById('connectButton');
+        connectButton.addEventListener('click', async () => {
+            try {
+                console.log('click connect');
+                init().then(({connect_imkey}) => {
+                    connect_imkey();
+                });
+            } catch (error) {
+                console.error('Error connecting to USB device:', error);
+            }
+        });
+   
+        // const sendButton = document.getElementById('sendButton');
+        // sendButton.addEventListener('click', async () => {
+        //     const apduInput = document.getElementById('apduInput');
+        //     const outputDiv = document.getElementById('output');
+        //     outputDiv.innerText += `-->${apduInput.value}\n`;
+        //     try {
+        //         const response = await send_apdu(apduInput.value);
+        //         document.getElementById('output').innerText += `<--${response}\n`;
+        //     } catch (error) {
+        //         console.error('Error connecting to USB device:', error);
+        //     }
+        // });
+
+        const bindButton = document.getElementById('bingingButton');
+        bindButton.addEventListener('click', async () => {
+            
+            try {
+                const bindCheckResult = await bind_check("/Users/xiaoguang/work/project/imkey-wasm-conver/ikc");
+                alert("bind check result->" + bindCheckResult);
+            } catch (error) {
+                console.error('bind check fail', error);
+            }
+        });
+
+
+    </script>
+</body>
+</html>

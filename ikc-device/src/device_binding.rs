@@ -18,6 +18,7 @@ use rsa::{BigUint, PaddingScheme, PublicKey as RSAPublic, RsaPublicKey};
 use secp256k1::{ecdh, PublicKey, SecretKey};
 use sha1::Sha1;
 use std::collections::HashMap;
+use futures::executor::block_on;
 
 lazy_static! {
     pub static ref KEY_MANAGER: Mutex<KeyManager> = Mutex::new(KeyManager::new());
@@ -33,9 +34,10 @@ lazy_static! {
 }
 
 pub struct DeviceManage {}
-#[cfg(target_arch = "wasm32")]
+
 impl DeviceManage {
     pub fn bind_check(file_path: &String) -> Result<String> {
+        
         //get seid
         let seid = device_manager::get_se_id()?;
         //get SN number
@@ -62,7 +64,7 @@ impl DeviceManage {
         let bind_check_apdu = ImkApdu::bind_check(&key_manager_obj.pub_key);
         //send bindcheck command and get return data
         select_imk_applet()?;
-        let bind_check_apdu_resp_data = send_apdu(bind_check_apdu)?;
+        let bind_check_apdu_resp_data = block_on(send_apdu(bind_check_apdu))?;
         ApduCheck::check_response(bind_check_apdu_resp_data.as_str())?;
 
         let status = String::from(&bind_check_apdu_resp_data[..2]);
@@ -134,7 +136,7 @@ impl DeviceManage {
         std::mem::drop(key_manager_obj);
         //send command to device
         // let bind_result = send_apdu_timeout(identity_verify_apdu, TIMEOUT_LONG * 2)?;
-        let bind_result = send_apdu(identity_verify_apdu)?;
+        let bind_result = block_on(send_apdu(identity_verify_apdu))?;
         ApduCheck::check_response(&bind_result)?;
         let result_code = &bind_result[..bind_result.len() - 4];
 
@@ -146,14 +148,14 @@ impl DeviceManage {
 
     pub fn display_bind_code() -> Result<()> {
         select_imk_applet()?;
-        let gen_auth_code_ret_data = send_apdu(ImkApdu::generate_auth_code())?;
+        let gen_auth_code_ret_data = block_on(send_apdu(ImkApdu::generate_auth_code()))?;
         ApduCheck::check_response(&gen_auth_code_ret_data)
     }
 }
 
 #[cfg(target_arch = "wasm32")]
 fn select_imk_applet() -> Result<()> {
-    let apdu_response = send_apdu(Apdu::select_applet(IMK_AID))?;
+    let apdu_response = block_on(send_apdu(Apdu::select_applet(IMK_AID)))?;
     ApduCheck::check_response(apdu_response.as_str())
 }
 

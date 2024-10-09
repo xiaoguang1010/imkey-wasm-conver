@@ -13,6 +13,7 @@ use ikc_common::constants;
 #[cfg(target_arch = "wasm32")]
 use ikc_webusb::webusb;
 use serde::{Deserialize, Serialize};
+use futures::executor::block_on;
 
 
 #[allow(non_snake_case)]
@@ -97,7 +98,7 @@ impl<T> ServiceResponse<T> {
         }
     }
 
-    #[cfg(target_arch = "wasm32")]
+    // #[cfg(target_arch = "wasm32")]
     pub fn apdu_handle(apdu_list: Vec<String>) -> Result<(Vec<String>, String)> {
         if apdu_list.is_empty() {
             ()
@@ -106,7 +107,7 @@ impl<T> ServiceResponse<T> {
         let mut status_word: String = String::new();
         for (index_val, apdu_val) in apdu_list.iter().enumerate() {
             //sende apdu command
-            let res = webusb::send_apdu(apdu_val.to_string())?;
+            let res = block_on(webusb::send_apdu(apdu_val.to_string()))?;
             apdu_res.push(res.clone());
             if index_val == apdu_list.len() - 1 {
                 status_word = String::from(&res[res.len() - 4..]);
