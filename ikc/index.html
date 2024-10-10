@@ -11,12 +11,13 @@
     <br><br>
     <input type="text" id="apduInput" placeholder="Enter APDU command" value="00A4040000" style="width: 300px;" />
     <button id="sendButton" >Send APDU</button>
-    <div id="output"></div>
+    <div id="apduOutput"></div>
     <br></br>
     <button id="bingingButton" >设备绑定</button>
+    <div id="bindInfoOutput"></div>
 
     <script type="module">
-        import init, {connect_imkey, send_command, bind_check} from './pkg/ikc.js';
+        import init, {connect_imkey, send_command, bind_check, bind_acquire} from './pkg/ikc.js';
         const connectButton = document.getElementById('connectButton');
         connectButton.addEventListener('click', async () => {
             try {
@@ -32,7 +33,7 @@
         const sendButton = document.getElementById('sendButton');
         sendButton.addEventListener('click', async () => {
             const apduInput = document.getElementById('apduInput');
-            const outputDiv = document.getElementById('output');
+            const outputDiv = document.getElementById('apduOutput');
             outputDiv.innerText += `-->${apduInput.value}\n`;
             try {
                 const response = await send_command(apduInput.value);
@@ -47,7 +48,18 @@
             
             try {
                 const bindCheckResult = await bind_check("/tmp");
-                alert("bind check result->" + bindCheckResult);
+                bindInfoOutput.innerText += `绑定检查结果：${bindCheckResult}\n`;
+                if (bindCheckResult === "bound_other") {
+                    const bindCode = prompt("Please enter your response:", "CM3SH5QE");
+                    if (bindCode) {
+                        console.log(`input bind code: ${bindCode}`);
+                        const bindResult = await bind_acquire(bindCode);
+                        console.log(`bind result: ${bindResult}`);
+                        bindInfoOutput.innerText += `绑定结果：${bindResult}\n`;
+                    }
+                } else {
+                    alert("bind check result->" + bindCheckResult);
+                }
             } catch (error) {
                 console.error('bind check fail', error);
             }

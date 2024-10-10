@@ -11,7 +11,7 @@ use ikc_common::constants::{
 use ikc_common::utility::sha256_hash;
 #[cfg(target_arch = "wasm32")]
 use ikc_webusb::webusb::{send_apdu};
-use parking_lot::Mutex;
+use parking_lot::{Mutex, RwLock};
 use rand::rngs::OsRng;
 use regex::Regex;
 use rsa::{BigUint, PaddingScheme, PublicKey as RSAPublic, RsaPublicKey};
@@ -32,6 +32,7 @@ lazy_static! {
         bind_status_mapping.insert(BIND_RESULT_ERROR, "authcode_error");
         bind_status_mapping
     };
+    pub static ref BIND_DATA: RwLock<String> = RwLock::new("".to_string());
 }
 
 pub struct DeviceManage {}
@@ -92,60 +93,62 @@ impl DeviceManage {
             //Save the ciphertext to a local file
             if key_flag {
                 let ciphertext = key_manager_obj.encrypt_data()?;
-                KeyManager::save_keys_to_local_file(&ciphertext, file_path, &seid)?;
+                // KeyManager::save_keys_to_local_file(&ciphertext, file_path, &seid)?;
+                *BIND_DATA.write() = ciphertext;
             }
         }
         Ok(BIND_STATUS_MAP.get(status.as_str()).unwrap().to_string())
     }
 
-    // pub fn bind_acquire(binding_code: &String) -> Result<String> {
-    //     let temp_binding_code = binding_code.to_uppercase();
-    //     let binding_code_bytes = temp_binding_code.as_bytes();
-    //     //check auth code
-    //     let bind_code_verify_regex = Regex::new(r"^[A-HJ-NP-Z2-9]{8}$").unwrap();
-    //     if !bind_code_verify_regex.is_match(temp_binding_code.as_ref()) {
-    //         return Err(BindError::ImkeySdkIllegalArgument.into());
-    //     }
-    //     //encryption auth code
-    //     let auth_code_ciphertext = auth_code_encrypt(&temp_binding_code)?;
+    pub async fn bind_acquire(binding_code: &String) -> Result<String> {
+        console::log_1(&format!("enter bind_acquire function:{:?}", binding_code.clone()).into());
+        let temp_binding_code = binding_code.to_uppercase();
+        let binding_code_bytes = temp_binding_code.as_bytes();
+        //check auth code
+        let bind_code_verify_regex = Regex::new(r"^[A-HJ-NP-Z2-9]{8}$").unwrap();
+        if !bind_code_verify_regex.is_match(temp_binding_code.as_ref()) {
+            return Err(BindError::ImkeySdkIllegalArgument.into());
+        }
+        //encryption auth code
+        let auth_code_ciphertext = auth_code_encrypt(&temp_binding_code)?;
+        console::log_1(&format!("绑定码加密:{:?}", auth_code_ciphertext.clone()).into());
+        //save auth Code cipher
+        let seid = device_manager::get_se_id().await?;
+        // AuthCodeStorageRequest::build_request_data(seid, auth_code_ciphertext).send_message()?;
 
-    //     //save auth Code cipher
-    //     let seid = device_manager::get_se_id()?;
-    //     // AuthCodeStorageRequest::build_request_data(seid, auth_code_ciphertext).send_message()?;
+        let key_manager_obj = KEY_MANAGER.lock();
+        //select IMK applet
+        select_imk_applet().await?;
+        //calc HASH
+        let mut data: Vec<u8> = vec![];
+        data.extend(binding_code_bytes);
+        data.extend(&key_manager_obj.pub_key);
+        data.extend(&key_manager_obj.se_pub_key);
+        let data_hash = sha256_hash(data.as_slice());
 
-    //     let key_manager_obj = KEY_MANAGER.lock();
-    //     //select IMK applet
-    //     select_imk_applet()?;
-    //     //calc HASH
-    //     let mut data: Vec<u8> = vec![];
-    //     data.extend(binding_code_bytes);
-    //     data.extend(&key_manager_obj.pub_key);
-    //     data.extend(&key_manager_obj.se_pub_key);
-    //     let data_hash = sha256_hash(data.as_slice());
+        //encryption hash value by session key
+        let ciphertext = encrypt_pkcs7(
+            &data_hash.as_ref(),
+            &key_manager_obj.session_key,
+            &gen_iv(&temp_binding_code),
+        )?;
+        //gen identityVerify command
+        let mut apdu_data = vec![];
+        apdu_data.extend(&key_manager_obj.pub_key);
+        apdu_data.extend(ciphertext);
+        let identity_verify_apdu = ImkApdu::identity_verify(&apdu_data);
+        std::mem::drop(key_manager_obj);
+        //send command to device
+        // let bind_result = send_apdu_timeout(identity_verify_apdu, TIMEOUT_LONG * 2)?;
+        let bind_result = send_apdu(identity_verify_apdu).await?;
+        ApduCheck::check_response(&bind_result)?;
+        let result_code = &bind_result[..bind_result.len() - 4];
 
-    //     //encryption hash value by session key
-    //     let ciphertext = encrypt_pkcs7(
-    //         &data_hash.as_ref(),
-    //         &key_manager_obj.session_key,
-    //         &gen_iv(&temp_binding_code),
-    //     )?;
-    //     //gen identityVerify command
-    //     let mut apdu_data = vec![];
-    //     apdu_data.extend(&key_manager_obj.pub_key);
-    //     apdu_data.extend(ciphertext);
-    //     let identity_verify_apdu = ImkApdu::identity_verify(&apdu_data);
-    //     std::mem::drop(key_manager_obj);
-    //     //send command to device
-    //     // let bind_result = send_apdu_timeout(identity_verify_apdu, TIMEOUT_LONG * 2)?;
-    //     let bind_result = block_on(send_apdu(identity_verify_apdu))?;
-    //     ApduCheck::check_response(&bind_result)?;
-    //     let result_code = &bind_result[..bind_result.len() - 4];
-
-    //     match result_code {
-    //         BIND_RESULT_ERROR => Err(BindError::ImkeyAuthcodeError.into()),
-    //         _ => Ok(BIND_STATUS_MAP.get(result_code).unwrap().to_string()),
-    //     }
-    // }
+        match result_code {
+            BIND_RESULT_ERROR => Err(BindError::ImkeyAuthcodeError.into()),
+            _ => Ok(BIND_STATUS_MAP.get(result_code).unwrap().to_string()),
+        }
+    }
 
     pub async fn display_bind_code() -> Result<()> {
         select_imk_applet().await?;

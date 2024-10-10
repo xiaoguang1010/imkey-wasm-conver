@@ -20,3 +20,8 @@ pub async fn send_command(apdu: &str) ->String {
 pub async fn bind_check(file_path: String) -> String{
     device_manager::bind_check(&file_path).await.unwrap()
 }
+
+#[wasm_bindgen]
+pub async fn bind_acquire(file_path: String) -> String{
+    device_manager::bind_acquire(&file_path).await.unwrap()
+}

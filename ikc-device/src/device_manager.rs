@@ -39,10 +39,10 @@ pub async fn get_sn() -> Result<String> {
 pub async fn bind_check(file_path: &str) -> Result<String> {
     DeviceManage::bind_check(&file_path.to_string()).await
 }
-// pub fn bind_display_code() -> Result<()> {
-//     DeviceManage::display_bind_code()
-// }
-// pub fn bind_acquire(bind_code: &str) -> Result<String> {
-//     DeviceManage::bind_acquire(&bind_code.to_string())
-// }
+pub async fn bind_display_code() -> Result<()> {
+    DeviceManage::display_bind_code().await
+}
+pub async fn bind_acquire(bind_code: &str) -> Result<String> {
+    DeviceManage::bind_acquire(&bind_code.to_string()).await
+}
 
