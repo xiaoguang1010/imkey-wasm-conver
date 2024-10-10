@@ -9,6 +9,7 @@ use std::fs;
 use std::fs::{File, OpenOptions};
 use std::io::{ErrorKind, Read, Write};
 use std::path::Path;
+use web_sys::console;
 
 pub struct KeyManager {
     pub pri_key: Vec<u8>,
@@ -98,7 +99,10 @@ impl KeyManager {
             }
             Err(e) => match e.kind() {
                 ErrorKind::NotFound => Ok(return_data),
-                _ => Err(BindError::ImkeyKeyfileIoError.into()),
+                _ => {
+                    // Err(BindError::ImkeyKeyfileIoError.into())
+                    Ok(return_data)
+                },
             },
         }
     }
@@ -159,7 +163,7 @@ impl KeyManager {
     /**
      Store key data
     */
-    pub fn save_keys_to_local_file(keys: &String, path: &String, seid: &String) -> Result<()> {
+    pub fn save_keys_to_local_file(keys: &String, path: &String, seid: &str) -> Result<()> {
         if !Path::new(path).exists() {
             fs::create_dir_all(path)?;
         }

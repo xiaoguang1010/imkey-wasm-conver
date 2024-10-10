@@ -369,6 +369,7 @@ dependencies = [
  "serde",
  "sha1",
  "thiserror",
+ "web-sys",
 ]
 
 [[package]]

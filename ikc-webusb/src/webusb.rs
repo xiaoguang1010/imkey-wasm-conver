@@ -90,9 +90,7 @@ pub async fn connect() -> Result<()> {
 
 #[cfg(target_arch = "wasm32")]
 // #[wasm_bindgen]
-pub async fn send_apdu(apdu: &str) -> Result<String> {
-
-    console::log_1(&"enter send_apdu function".into());
+pub async fn send_apdu(apdu: String) -> Result<String> {
     console::log_1(&format!("-->{:?}", apdu).into());
     // 访问存储的 UsbDevice
     let hid_device_obj = WEB_USB_DEVICE.lock();
@@ -106,7 +104,7 @@ pub async fn send_apdu(apdu: &str) -> Result<String> {
     }
     console::log_1(&format!("<--{:?}", response_data.clone()).into());
 
-    Ok(response_data)
+    Ok(response_data.to_uppercase())
 }
 
 
