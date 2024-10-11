@@ -6,9 +6,10 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ikc-webusb = { path = "../ikc-webusb"}
+ikc-webusb = { path = "../ikc-webusb" }
 ikc-device = { path = "../ikc-device" }
 ikc-common = { path = "../ikc-common" }
+coin-bitcoin = { path = "../ikc-wallet/coin-bitcoin" }
 wasm-bindgen = { version = "0.2.93", features = ["serde-serialize"] }
 wasm-bindgen-futures = "0.4"
 getrandom = { version = "0.2", features = ["js"] }  # 启用 "js" 特性

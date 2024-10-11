@@ -4,6 +4,9 @@ pub mod apdu;
 pub mod utility;
 pub mod error;
 pub mod hex;
+pub mod path;
+pub mod coin_info;
+pub mod curve;
 
 use parking_lot::RwLock;
 

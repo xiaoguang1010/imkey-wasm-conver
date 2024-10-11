@@ -10,7 +10,7 @@ use ikc_common::constants::{
 };
 use ikc_common::utility::sha256_hash;
 #[cfg(target_arch = "wasm32")]
-use ikc_webusb::webusb::{send_apdu};
+use ikc_webusb::webusb::send_apdu;
 use parking_lot::{Mutex, RwLock};
 use rand::rngs::OsRng;
 use regex::Regex;

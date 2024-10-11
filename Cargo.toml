@@ -4,4 +4,5 @@ members = [
     "ikc-webusb",
     "ikc-device",
     "ikc-common",
+    "ikc-wallet/coin-bitcoin",
 ]

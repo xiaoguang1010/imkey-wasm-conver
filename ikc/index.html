@@ -15,9 +15,12 @@
     <br></br>
     <button id="bingingButton" >设备绑定</button>
     <div id="bindInfoOutput"></div>
+    <br></br>
+    <button id="getAddressButton" >获取钱包地址</button>
+    <div id="addressInfoOutput"></div>
 
     <script type="module">
-        import init, {connect_imkey, send_command, bind_check, bind_acquire, bind_display_code} from './pkg/ikc.js';
+        import init, {connect_imkey, send_command, bind_check, bind_acquire, bind_display_code, get_address} from './pkg/ikc.js';
         const connectButton = document.getElementById('connectButton');
         connectButton.addEventListener('click', async () => {
             try {
@@ -70,10 +73,19 @@
                     bindInfoOutput.innerText += `绑定结果：已绑定\n`;
                 }
             } catch (error) {
-                console.error('bind check fail', error);
+                console.error('bind fail', error);
             }
         });
 
+        const getAddressButton = document.getElementById('getAddressButton');
+        getAddressButton.addEventListener('click', async () => {
+            try {
+                const address = await get_address("VERSION_1", "MAINNET","m/86'/1'/0'");
+                document.getElementById('addressInfoOutput').innerText = `BTC地址：${address}\n`;
+            } catch (error) {
+                document.getElementById('addressInfoOutput').innerText = `获取BTC地址失败\n`;
+            }
+        });
 
     </script>
 </body>
