@@ -55,10 +55,9 @@ pub async fn connect() -> Result<()> {
     // 请求设备
     match device {
         Ok(device) => {
-            console::log_1(&"Device requested successfully".into());
             // 继续处理设备
             let device: UsbDevice = device.unchecked_into();
-            web_sys::console::log_1(&format!("++++++++++++Product Name: {:?}", device.product_name()).into());
+            web_sys::console::log_1(&format!("Device Name: {:?}", device.product_name()).into());
             let open_promise = device.open();
             JsFuture::from(open_promise).await.unwrap();
 
@@ -97,7 +96,7 @@ pub async fn send_apdu(apdu: String) -> Result<String> {
     let mut response_data = "".to_string();
     if let Some(device) = &*hid_device_obj {
         // 这里可以使用 device 进行操作
-        console::log_1(&format!("Using device: {:?}", device.0.product_name()).into());
+        // console::log_1(&format!("Using device: {:?}", device.0.product_name()).into());
         response_data = send_and_receive(&device.0, hex::decode(apdu).unwrap().as_slice()).await;
     } else {
         console::log_1(&"No device found".into());
@@ -231,18 +230,10 @@ impl ResponseAcc {
 
 
 pub async fn send_and_receive(device: &UsbDevice, apdu: &[u8]) -> String{
-    // let hid_device_obj = WEB_USB_DEVICE.lock();
-    // let device = if let Some(device) = &*hid_device_obj {
-    //     &device.0
-    // } else {
-    //     panic!("error");
-    // };
-    // console::log_1(&format!("Using device: {:?}", device.product_name()).into());
-
     //send
     let send_list = make_blocks(apdu);
     for val in send_list.iter() {
-        console::log_1(&format!("write chunk--> {:?}", hex::encode(val.clone())).into());
+        // console::log_1(&format!("write chunk--> {:?}", hex::encode(val.clone())).into());
         let uint8_array = Uint8Array::new_with_length(val.len() as u32);
         uint8_array.copy_from(val.as_ref());
         device.transfer_out_with_buffer_source(4u8, &uint8_array);
@@ -282,10 +273,9 @@ pub async fn send_and_receive(device: &UsbDevice, apdu: &[u8]) -> String{
     while true {
         let result = response_acc.get_reduced_result();
         if result.is_some(){
-            console::log_1(&format!("read end--> {:?}", hex::encode(&response_acc.data)).into());
+            // console::log_1(&format!("read end--> {:?}", hex::encode(&response_acc.data)).into());
             break;
         }
-        // response_acc.reduce_response(buffer.as_slice());
 
         let transfer_promise: Promise = device.transfer_in(5u8, packet_size);
         // 使用 JsFuture::from 将 Promise 转换为 Future，并等待其完成

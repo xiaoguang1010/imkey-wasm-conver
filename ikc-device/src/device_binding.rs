@@ -101,7 +101,6 @@ impl DeviceManage {
     }
 
     pub async fn bind_acquire(binding_code: &String) -> Result<String> {
-        console::log_1(&format!("enter bind_acquire function:{:?}", binding_code.clone()).into());
         let temp_binding_code = binding_code.to_uppercase();
         let binding_code_bytes = temp_binding_code.as_bytes();
         //check auth code
@@ -152,7 +151,7 @@ impl DeviceManage {
 
     pub async fn display_bind_code() -> Result<()> {
         select_imk_applet().await?;
-        let gen_auth_code_ret_data = block_on(send_apdu(ImkApdu::generate_auth_code()))?;
+        let gen_auth_code_ret_data = send_apdu(ImkApdu::generate_auth_code()).await?;
         ApduCheck::check_response(&gen_auth_code_ret_data)
     }
 }

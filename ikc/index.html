@@ -17,7 +17,7 @@
     <div id="bindInfoOutput"></div>
 
     <script type="module">
-        import init, {connect_imkey, send_command, bind_check, bind_acquire} from './pkg/ikc.js';
+        import init, {connect_imkey, send_command, bind_check, bind_acquire, bind_display_code} from './pkg/ikc.js';
         const connectButton = document.getElementById('connectButton');
         connectButton.addEventListener('click', async () => {
             try {
@@ -37,7 +37,7 @@
             outputDiv.innerText += `-->${apduInput.value}\n`;
             try {
                 const response = await send_command(apduInput.value);
-                document.getElementById('output').innerText += `<--${response}\n`;
+                document.getElementById('apduOutput').innerText += `<--${response}\n`;
             } catch (error) {
                 console.error('Error connecting to USB device:', error);
             }
@@ -50,7 +50,16 @@
                 const bindCheckResult = await bind_check("/tmp");
                 bindInfoOutput.innerText += `绑定检查结果：${bindCheckResult}\n`;
                 if (bindCheckResult === "bound_other") {
-                    const bindCode = prompt("Please enter your response:", "CM3SH5QE");
+                    const bindCode = prompt("Please enter your bind code:", "CM3SH5QE");
+                    if (bindCode) {
+                        console.log(`input bind code: ${bindCode}`);
+                        const bindResult = await bind_acquire(bindCode);
+                        console.log(`bind result: ${bindResult}`);
+                        bindInfoOutput.innerText += `绑定结果：${bindResult}\n`;
+                    }
+                } else if (bindCheckResult === "unbound") {
+                    await bind_display_code();
+                    const bindCode = prompt("Please enter your bind code:");
                     if (bindCode) {
                         console.log(`input bind code: ${bindCode}`);
                         const bindResult = await bind_acquire(bindCode);
@@ -58,7 +67,7 @@
                         bindInfoOutput.innerText += `绑定结果：${bindResult}\n`;
                     }
                 } else {
-                    alert("bind check result->" + bindCheckResult);
+                    bindInfoOutput.innerText += `绑定结果：已绑定\n`;
                 }
             } catch (error) {
                 console.error('bind check fail', error);

@@ -25,3 +25,8 @@ pub async fn bind_check(file_path: String) -> String{
 pub async fn bind_acquire(file_path: String) -> String{
     device_manager::bind_acquire(&file_path).await.unwrap()
 }
+
+#[wasm_bindgen]
+pub async fn bind_display_code(){
+    device_manager::bind_display_code().await.expect("display_bind_code_error");
+}
