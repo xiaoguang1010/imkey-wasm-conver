@@ -10,8 +10,8 @@ edition = "2018"
 ikc-common = {path = "../ikc-common"}
 ikc-webusb = {path = "../ikc-webusb"}
 serde = { version = "=1.0.147", features = ["derive"] }
-# serde_derive = "=1.0.147"
-# serde_json = "=1.0.89"
+serde_derive = "=1.0.147"
+serde_json = "=1.0.89"
 base64 = "=0.13.1"
 hex = "=0.4.3"
 secp256k1 = {version ="=0.24.3", features = ["rand", "recovery", "rand-std"] }
@@ -22,9 +22,9 @@ lazy_static = "=1.4.0"
 regex = "=1.9.3"
 anyhow = "=1.0.79"
 log = {version = "=0.4.17", features = ["std"]}
-# prost = "=0.11.2"
-# prost-types = "=0.11.2"
-# bytes = "=1.4.0"
+prost = "=0.11.2"
+prost-types = "=0.11.2"
+bytes = "=1.4.0"
 parking_lot = "=0.12.1"
 thiserror = "=1.0.56"
 futures = "0.3"
