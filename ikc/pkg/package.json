@@ -1,0 +1,15 @@
+{
+  "name": "ikc",
+  "type": "module",
+  "version": "0.1.0",
+  "files": [
+    "ikc_bg.wasm",
+    "ikc.js",
+    "ikc.d.ts"
+  ],
+  "main": "ikc.js",
+  "types": "ikc.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}
